@@ -1,9 +1,6 @@
 const Server = require('socket.io');
 const io = new Server();
-io.
-//io.setheader("access-contro-allow-origin","*");
-//io.set("origins","*");
-//io.origins("*");
+
 io.listen('5050');
 var clientList = [];
 console.log("server run!");
