@@ -4,7 +4,7 @@ io.
 //io.setheader("access-contro-allow-origin","*");
 //io.set("origins","*");
 //io.origins("*");
-io.listen('3000');
+io.listen('5050');
 var clientList = [];
 console.log("server run!");
 io.on('connect',function (client) {
