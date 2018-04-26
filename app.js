@@ -1,29 +1,40 @@
 const Server = require('socket.io');
 const io = new Server();
 
-io.listen('5050');
-var clientList = [];
+//io.setheader("access-contro-allow-origin","*");
+//io.set("origins","*");
+//io.origins("*");
+io.listen('5000');
+
+var sendToClient = function (clientroom,event,type,data,callback=null) {
+    io.sockets.in(clientroom).emit(event,{type:type,data:data});
+    if(callback){
+        callback();
+    }
+};
+
+var clientList = {};
 console.log("server run!");
 io.on('connect',function (client) {
-    client.join('firstRoom');
-    clientList.push(client);
-    console.log("there is one client connect"+clientList.length);
 
-   var result= client.emit("welcome","you have connect server");
+    console.log("there is one client connect");
 
-    client.on("wxmessage",function(data){
+    client.on('joinRoom',(data)=>{          //加入相同房间
+        client.join(data.data);
+        clientList.client = data.data;
+        console.log("roomid = "+clientList.client);
+    });
 
-      console.log("name = "+data.name);
-      console.log("age = "+data.age);
-      console.log("describe = "+data['describe']);
-      //client.to("firstRoom").emit("wxmessageBack","返回一个信息");
-        //io.sockets.emit("wxmessageBack","返回一个信息");
-        io.sockets.in('firstRoom').emit("wxmessageBack","返回一个信息");
 
-   });
+    client.on('move',(data)=>{
+        sendToClient(clientList.client,'move',data.type,data.data);  //再次将客户端传来的数据发送给相同房间的客户端
+        console.log("已经收到客户端的移动信息");
+    });
+
+
     client.on("disconnect",function(data){
-        clientList.indexOf(client);
-        clientList.splice(clientList.indexOf(client),clientList.indexOf(client)+1);
+        // clientList.indexOf(client);
+        // clientList.splice(clientList.indexOf(client),clientList.indexOf(client)+1);
 
 
 
