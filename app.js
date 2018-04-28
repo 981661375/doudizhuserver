@@ -22,8 +22,10 @@ io.on('connect',function (client) {
 
    console.log("there is one client connect");
 
-   var timeInterval=null;
+    var player=null;
 
+    var timeInterval=null;
+    var timeInterval_start=null;
     var clientRoom=null;
     client.on('move',(data)=>{
         sendToClient(client,clientRoom,'move',data.type,data.data);
@@ -40,10 +42,16 @@ io.on('connect',function (client) {
             sendToClient(client,clientRoom,'game',data.type,data.data);
             sendToClient(client,clientRoom,'showRivalInfo','','');
         }else if(data.type==='gameover'){
-            io.sockets.in(clientRoom).emit("game",{type:"gameover",data:''})
+            io.sockets.in(clientRoom).emit("game",{type:"gameover",data:''});
+           clearInterval(timeInterval);   //必须清除定时器！！！！不然会一直发送信息
+            console.log(clearInterval(timeInterval));
         }else if(data.type==='continuegame'){
             sendToClient(client,clientRoom,'game',data.type,data.data);
-            //client.emit('showRivalInfo','');
+        }else if(data.type==='restart'){
+            timeInterval= setInterval(()=>{
+                console.log("birdMove2222222");
+                io.sockets.in(clientRoom).emit('birdMove',{x_Percent:Math.random()*0.5,y_Percent:Math.random()*1,changeTime:(1-Math.random())*3+0.1});
+            },1000);
         }
         else{
             sendToClient(client,clientRoom,'game',data.type,data.data);
@@ -61,9 +69,11 @@ io.on('connect',function (client) {
                     clientList[clientRoom] = 2;
                     client.emit('roomJudge','intoRoom');
                     io.sockets.in(clientRoom).emit('game',{type:'allPlayerJoin',data:''});
+                    player='joiner';
                     timeInterval= setInterval(()=>{
+                        console.log("birdMove----------");
                         io.sockets.in(clientRoom).emit('birdMove',{x_Percent:Math.random()*0.5,y_Percent:Math.random()*1,changeTime:(1-Math.random())*3+0.1});
-                    },1000);
+                        },1000);
 
                 }else{
                     client.emit('roomJudge','roomNotRight');
@@ -81,6 +91,7 @@ io.on('connect',function (client) {
                 clientList[clientRoom] = 1;           //将传进来的room值作为clientlist的键
                 console.log(clientList);
                 client.emit('roomJudge','intoRoom');
+                player='creator';
             }
         }
     });
